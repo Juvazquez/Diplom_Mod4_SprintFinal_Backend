@@ -10,18 +10,39 @@ import {
     obtenerPaisPorIdJSON,
     obtenerPaisPorNombreController
 } from '../controllers/paisController.mjs';
-import {authenticateToken, hasPermission } from '../middleware/authenticationMiddleware.mjs';
+import { authenticateToken, hasPermission } from '../middleware/authenticationMiddleware.mjs';
 
 const router = express.Router();
 
-// CRUD
-//Verificamos si el usuario tiene acceso 
-//y luego verificamos si tiene permisos 
-router.get("/", authenticateToken,hasPermission("read:paises"), obtenerPaisesJSON);
-router.get("/:id", authenticateToken, hasPermission("read:paises"), obtenerPaisPorIdJSON);
-router.get("/nombre/:nombre", authenticateToken, hasPermission("read:paises"), obtenerPaisPorNombreController);
-router.post('/agregar', authenticateToken, hasPermission("create:paises"), normalizarPais, validarPais, agregarPaisController);
-router.delete('/eliminar/:id', authenticateToken, hasPermission("delete:paises"), eliminarPaisController);
-router.put('/editar/:id', authenticateToken, hasPermission("update:paises"), normalizarPais, validarPais, editarPaisController);
+// ✅ Públicos (no necesitan login)
+router.get("/", obtenerPaisesJSON);
+router.get("/:id", obtenerPaisPorIdJSON);
+router.get("/nombre/:nombre", obtenerPaisPorNombreController);
+
+// 🔒 Protegidos (requieren login + permisos)
+router.post(
+  '/agregar',
+  authenticateToken,
+  hasPermission("create:paises"),
+  normalizarPais,
+  validarPais,
+  agregarPaisController
+);
+
+router.delete(
+  '/eliminar/:id',
+  authenticateToken,
+  hasPermission("delete:paises"),
+  eliminarPaisController
+);
+
+router.put(
+  '/editar/:id',
+  authenticateToken,
+  hasPermission("update:paises"),
+  normalizarPais,
+  validarPais,
+  editarPaisController
+);
 
 export default router;
